@@ -9,6 +9,14 @@ export default class FA {
         this.finals = finals;
     }
 
+    reset() {
+        this.states = new Set();
+        this.alphabet = new Set();
+        this.transitions = [];
+        this.initial = "";
+        this.finals = new Set();
+    }
+
     buildFromGrammar(grammar) {
         this.reset();
 
@@ -23,9 +31,7 @@ export default class FA {
                 if (grammar.P[head].has("&")) epsilonAtInitial = true;
             } else {
                 if (grammar.P[head].has("&")) {
-                    alert(
-                        "Should not have epsilon transitions in other productions than the initial"
-                    );
+                    alert("Should not have epsilon transitions in other productions than the initial");
                     this.reset();
                     return this;
                 }
@@ -36,28 +42,21 @@ export default class FA {
         if (epsilonAtInitial) {
             for (let head in grammar.P) {
                 grammar.P[head].forEach(element => {
-                    if (
-                        element.length === 2 &&
-                        element.charAt(1) === grammar.S
-                    ) {
-                        alert(
-                            "Should not have a transition to the intial state having epsilon"
-                        );
+                    if (element.length === 2 && element.charAt(1) === grammar.S) {
+                        alert("Should not have a transition to the intial state having epsilon");
                         this.reset();
                         return this;
                     }
                 });
             }
         }
-        let states = [...grammar.Vn, ACCEPT_STATE];
-        let alphabet = [...grammar.Vt];
+        let states = new Set([...grammar.Vn, ACCEPT_STATE]);
+        let alphabet = new Set([...grammar.Vt]);
         let transitions = [];
         let initial = grammar.S;
-        let finals = epsilonAtInitial
-            ? [...grammar.S, ACCEPT_STATE]
-            : [ACCEPT_STATE];
+        let finals = epsilonAtInitial ? new Set([...grammar.S, ACCEPT_STATE]) : new Set([ACCEPT_STATE]);
 
-        // Prevent productions to a production with epsilon
+        // Build transitions
         for (let head in grammar.P) {
             grammar.P[head].forEach(element => {
                 if (element.length === 1) {
@@ -80,14 +79,63 @@ export default class FA {
         this.transitions = transitions;
         this.initial = initial;
         this.finals = finals;
-        console.log(this);
     }
 
-    reset() {
-        this.states = [];
-        this.alphabet = [];
-        this.transitions = [];
-        this.initial = null;
-        this.finals = [];
+    isDeterminisc() {
+        return this.transitions.some(transition => {
+            for (let t in this.transitions) {
+                if (
+                    transition.from === this.transitions[t].from &&
+                    transition.to !== this.transitions[t].to &&
+                    transition.when === this.transitions[t].when
+                ) {
+                    return false;
+                }
+            }
+            return true;
+        });
+    }
+
+    addState(state) {
+        this.states.add(state);
+    }
+
+    addSymbol(symbol) {
+        this.alphabet.add(symbol);
+    }
+
+    setInitial(initial) {
+        this.initial = initial;
+    }
+
+    addFinal(state) {
+        this.finals.add(state);
+    }
+    removeFinal(state) {
+        this.finals.delete(state);
+    }
+    updateTransition(from, to, when) {
+        to = to.replace(/[ \-\t\r]+/g, "");
+        to = to.toUpperCase();
+        to = to.split(",");
+        to = new Set(to.filter(element => element !== ""));
+        console.log(to);
+
+        this.transitions = this.transitions.filter(
+            transition => transition.from !== from || transition.when !== [...this.alphabet][when]
+        );
+
+        to.forEach(state => {
+            if (state === "") {
+                return;
+            }
+            if (!this.states.has(state)) {
+                this.states.add(state);
+                this.transitions.push({ from: from, to: state, when: [...this.alphabet][when] });
+            } else {
+                this.transitions.push({ from: from, to: state, when: [...this.alphabet][when] });
+            }
+        });
+        console.log(this.transitions);
     }
 }

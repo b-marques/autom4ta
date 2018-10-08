@@ -21,11 +21,8 @@ export default class Grammar {
     }
 
     extractElements() {
-        // Remove spaces from input
-        let lines = this.text.replace(/[ \t\r]+/g, "");
-
         // Remove new line whit null behind
-        lines = lines.replace(/(?<!([a-z]|&|[0-9]|[A-Z]))\n/g, "");
+        let lines = this.text.replace(/(?<!([a-z]|&|[0-9]|[A-Z]))\n/g, "");
 
         // Remove new line whit null ahead
         lines = lines.replace(/\n(?!([a-z]|&|[0-9]|[A-Z]))/g, "");
@@ -34,19 +31,21 @@ export default class Grammar {
         lines = lines.split("\n");
 
         for (let i = 0; i < lines.length; i++) {
-            const production = XRegExp.exec(lines[i], line_regex);
             // Check if is a valid line with regex
-            if (production === null) {
+            const first_check = XRegExp.exec(lines[i], line_regex);
+            if (first_check === null) {
                 this.reset();
                 return this;
             }
+            // If valid, remove spaces from input
+            lines[i] = lines[i].replace(/[ \t\r]+/g, "");
+            const production = XRegExp.exec(lines[i], line_regex);
 
             if (i === 0) this.S = production.head;
 
             // Extracting production rules
             production.body.split("|").forEach(element => {
-                if (this.P[production.head] === undefined)
-                    this.P[production.head] = new Set();
+                if (this.P[production.head] === undefined) this.P[production.head] = new Set();
                 this.P[production.head].add(element);
             });
         }
@@ -76,8 +75,8 @@ export default class Grammar {
     }
 
     reset() {
-        this.Vt = [];
-        this.Vn = [];
+        this.Vt = new Set();
+        this.Vn = new Set();
         this.P = {};
         this.S = null;
         this.valid = false;
