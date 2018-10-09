@@ -44,9 +44,13 @@ export const removeFinal = state => ({
     state: state
 });
 
-export const updateTransition = (from, to, when) => ({
+export const updateTransition = (state, to, symbol) => ({
     type: actionType.UPDATE_TRANSITION,
-    from: from,
+    state: state,
     to: to,
-    when: when
+    symbol: symbol
+});
+
+export const determinize = () => ({
+    type: actionType.DETERMINIZE
 });

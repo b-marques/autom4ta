@@ -57,20 +57,21 @@ export default class FA {
         let finals = epsilonAtInitial ? new Set([...grammar.S, ACCEPT_STATE]) : new Set([ACCEPT_STATE]);
 
         // Build transitions
+        for (let state in [...states]) {
+            transitions[[...states][state]] = [];
+            for (let symbol in [...alphabet]) {
+                transitions[[...states][state]][[...alphabet][symbol]] = { to: new Set(), text: " -" };
+            }
+        }
         for (let head in grammar.P) {
             grammar.P[head].forEach(element => {
                 if (element.length === 1) {
-                    transitions.push({
-                        from: head,
-                        to: ACCEPT_STATE,
-                        when: element
-                    });
+                    transitions[head][element].to.add(ACCEPT_STATE);
+                    transitions[head][element].text = " " + [...transitions[head][element].to].join(", ");
                 } else {
-                    transitions.push({
-                        from: head,
-                        to: element.charAt(1),
-                        when: element.charAt(0)
-                    });
+                    transitions[head][element.charAt(0)].to.add(element.charAt(1));
+                    transitions[head][element.charAt(0)].text =
+                        " " + [...transitions[head][element.charAt(0)].to].join(", ");
                 }
             });
         }
@@ -82,26 +83,41 @@ export default class FA {
     }
 
     isDeterminisc() {
-        return this.transitions.some(transition => {
-            for (let t in this.transitions) {
-                if (
-                    transition.from === this.transitions[t].from &&
-                    transition.to !== this.transitions[t].to &&
-                    transition.when === this.transitions[t].when
-                ) {
+        let alphabet = [...this.alphabet];
+        let states = [...this.states];
+        for (let state in states) {
+            for (let symbol in alphabet) {
+                if (this.transitions[states[state]][alphabet[symbol]].to.size > 1) {
                     return false;
                 }
             }
-            return true;
-        });
+        }
+        return true;
     }
 
     addState(state) {
+        if (this.states.has(state)) {
+            return;
+        }
         this.states.add(state);
+        // Update transition array
+        let alphabet = [...this.alphabet];
+        this.transitions[state] = [];
+        for (let symbol in alphabet) {
+            this.transitions[state][alphabet[symbol]] = { to: new Set(), text: " -" };
+        }
     }
 
     addSymbol(symbol) {
+        if (this.alphabet.has(symbol)) {
+            return;
+        }
         this.alphabet.add(symbol);
+        // Update transition array
+        let states = [...this.states];
+        for (let s in states) {
+            this.transitions[states[s]][symbol] = { to: new Set(), text: " -" };
+        }
     }
 
     setInitial(initial) {
@@ -114,28 +130,73 @@ export default class FA {
     removeFinal(state) {
         this.finals.delete(state);
     }
-    updateTransition(from, to, when) {
-        to = to.replace(/[ \-\t\r]+/g, "");
-        to = to.toUpperCase();
-        to = to.split(",");
-        to = new Set(to.filter(element => element !== ""));
-        console.log(to);
 
-        this.transitions = this.transitions.filter(
-            transition => transition.from !== from || transition.when !== [...this.alphabet][when]
-        );
+    updateTransition(state, value, symbol) {
+        // Remove spaces from input
+        value = value.replace(/[ \t\r]+/g, "");
+        let regex = /^((-?([A-Z☢]))(,+([A-Z☢]))*)$/;
+        if (!regex.test(value) && value !== "") {
+            this.transitions[state][symbol].text = value;
+            return false;
+        }
 
-        to.forEach(state => {
-            if (state === "") {
-                return;
-            }
-            if (!this.states.has(state)) {
-                this.states.add(state);
-                this.transitions.push({ from: from, to: state, when: [...this.alphabet][when] });
-            } else {
-                this.transitions.push({ from: from, to: state, when: [...this.alphabet][when] });
-            }
+        value = value.replace(/[ -]+/g, "");
+        value = value.split(",");
+        value = new Set(value.filter(element => element !== ""));
+
+        [...value].forEach(element => {
+            this.addState(element);
         });
-        console.log(this.transitions);
+
+        this.transitions[state][symbol].to = value;
+        this.transitions[state][symbol].text = value.size ? " " + [...value].join(", ") : " -";
+    }
+
+    hasInitial() {
+        if (this.initial) return true;
+        return false;
+    }
+
+    determinize() {
+        let dfa = new FA();
+        dfa.reset();
+        [...this.alphabet].forEach(symbol => {
+            dfa.addSymbol(symbol);
+        });
+        dfa.addState(this.initial);
+        dfa.initial = this.initial;
+
+        let old_length;
+        do {
+            old_length = dfa.states.size;
+            // Build transitions
+            let states = [...dfa.states];
+            let alphabet = [...dfa.alphabet];
+            for (let state of states) {
+                for (let symbol of alphabet) {
+                    // Build reachable states from actual
+                    let composedDestiny = new Set();
+                    // Split composed states and for each composed their "tos"
+                    for (let element of state.split("")) {
+                        let tos = [...this.transitions[element][symbol].to];
+                        for (let to in tos) {
+                            composedDestiny.add(tos[to]);
+                        }
+                    }
+
+                    if (composedDestiny.size) {
+                        let composedState = [...composedDestiny].join("");
+                        dfa.addState(composedState);
+                        dfa.transitions[composedState][symbol].to = composedDestiny;
+                        [...composedDestiny].forEach(element => {
+                            if (this.finals.has(element)) {
+                                dfa.finals.add(composedState);
+                            }
+                        });
+                    }
+                }
+            }
+        } while (old_length !== dfa.states.size);
+        console.log(dfa);
     }
 }

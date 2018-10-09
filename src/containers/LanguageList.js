@@ -9,7 +9,8 @@ import {
     setInitial,
     addFinal,
     removeFinal,
-    updateTransition
+    updateTransition,
+    determinize
 } from "../actions";
 
 import { withStyles } from "@material-ui/core/styles";
@@ -22,6 +23,7 @@ import TableCell from "@material-ui/core/TableCell";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 
+import Button from "@material-ui/core/Button";
 import Radio from "@material-ui/core/Radio";
 import Checkbox from "@material-ui/core/Checkbox";
 
@@ -63,29 +65,6 @@ class LanguageList extends React.Component {
     tableBody() {
         const { classes } = this.props;
 
-        const transitions = state => {
-            let data = [];
-            for (let symbol in [...this.props.reducer.languages[this.props.reducer.selected_language].fa.alphabet]) {
-                let states_to = [];
-                for (let t in this.props.reducer.languages[this.props.reducer.selected_language].fa.transitions) {
-                    if (
-                        this.props.reducer.languages[this.props.reducer.selected_language].fa.transitions[t].from ===
-                            state &&
-                        this.props.reducer.languages[this.props.reducer.selected_language].fa.transitions[t].when ===
-                            [...this.props.reducer.languages[this.props.reducer.selected_language].fa.alphabet][symbol]
-                    ) {
-                        states_to = [
-                            ...states_to,
-                            this.props.reducer.languages[this.props.reducer.selected_language].fa.transitions[t].to
-                        ];
-                    }
-                }
-                if (!states_to.length) states_to = ["-"];
-                data = [...data, states_to];
-            }
-            return data;
-        };
-
         if (
             this.props.reducer.languages[this.props.reducer.selected_language].fa.states === undefined ||
             !this.props.reducer.languages[this.props.reducer.selected_language].fa.states.size
@@ -120,35 +99,43 @@ class LanguageList extends React.Component {
                                 } else {
                                     this.props.removeFinal(e.target.value);
                                 }
-                                console.log(
-                                    this.props.reducer.languages[this.props.reducer.selected_language].fa.finals
-                                );
                             }}
                         />
                     </TableCell>
                     <TableCell component="th" scope="row">
-                        <input defaultValue={state} className={classes.inputCellState} />
+                        <span className={classes.inputCellState}>{state}</span>
                     </TableCell>
-                    {transitions(state).map((data, id) => {
-                        return (
-                            <TableCell component="th" scope="row" key={id}>
-                                <input
-                                    onBlur={e => {
-                                        e.target.value = data.join(", ");
-                                    }}
-                                    onChange={e => {
-                                        e.target.value = e.target.value.toUpperCase();
-                                    }}
-                                    onKeyPress={e => {
-                                        let regex = /^(([ ]*[ -][ ]*)|(([ ]*([A-Z])[ ]*)([,]([ ]*([A-Z])[ ]*))*))$/;
-                                        if (e.key === "Enter" && regex.test(e.target.value)) {
-                                            this.props.updateTransition(state, e.target.value, id);
+                    {[...this.props.reducer.languages[this.props.reducer.selected_language].fa.alphabet].map(
+                        (symbol, id) => {
+                            return (
+                                <TableCell component="th" scope="row" key={state + symbol + id}>
+                                    <input
+                                        size={
+                                            this.props.reducer.languages[this.props.reducer.selected_language].fa
+                                                .transitions[state][symbol].text.length + 1
                                         }
-                                    }}
-                                />
-                            </TableCell>
-                        );
-                    })}
+                                        value={
+                                            this.props.reducer.languages[this.props.reducer.selected_language].fa
+                                                .transitions[state][symbol].text
+                                        }
+                                        style={
+                                            this.props.reducer.languages[
+                                                this.props.reducer.selected_language
+                                            ].fa.transitions[state][symbol].text.indexOf(" ") === -1
+                                                ? { backgroundColor: "#ffdddd" }
+                                                : {}
+                                        }
+                                        className={classes.inputCellTransition}
+                                        onChange={e => {
+                                            e.target.width = e.target.value.length;
+                                            e.target.value = e.target.value.toUpperCase();
+                                            this.props.updateTransition(state, e.target.value, symbol);
+                                        }}
+                                    />
+                                </TableCell>
+                            );
+                        }
+                    )}
                 </TableRow>
             );
         });
@@ -200,41 +187,53 @@ class LanguageList extends React.Component {
                                     <TableRow>
                                         {this.tableHeader().map((element, id) => {
                                             return (
-                                                <TableCell className={classes.head} component="th" scope="row" key={id}>
+                                                <TableCell
+                                                    className={classes.head}
+                                                    width="12px"
+                                                    component="th"
+                                                    scope="row"
+                                                    key={id}
+                                                >
                                                     {element}
                                                 </TableCell>
                                             );
                                         })}
                                         <TableCell
+                                            width="69px"
                                             className={classes.head}
                                             component="th"
                                             scope="row"
                                             key={"new-symbol-column"}
                                         >
                                             <input
+                                                size="12"
                                                 maxLength="1"
                                                 pattern="[a-z0-9]"
-                                                placeholder="Input new symbol."
                                                 className={classes.inputCellSymbol}
+                                                placeholder="Input new symbol"
                                                 onChange={e => {
                                                     e.target.value = e.target.value.toLowerCase();
                                                 }}
                                                 onKeyPress={e => {
-                                                    let regex = /[a-z]|[0-9]/;
+                                                    let regex = /[a-z]|[0-9]|&/;
                                                     if (e.key === "Enter" && regex.test(e.target.value)) {
                                                         this.props.addSymbol(e.target.value);
                                                         e.target.value = "";
                                                     }
                                                 }}
                                             />
+                                            {/*<span> Input new symbol</span>*/}
                                         </TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
                                     {this.tableBody()}
                                     <TableRow key={"new-state-row"}>
+                                        <TableCell component="th" scope="row" />
+                                        <TableCell component="th" scope="row" />
                                         <TableCell component="th" scope="row">
                                             <input
+                                                size="10"
                                                 maxLength="1"
                                                 placeholder="Input new state."
                                                 className={classes.inputCellState}
@@ -253,6 +252,18 @@ class LanguageList extends React.Component {
                                     </TableRow>
                                 </TableBody>
                             </Table>
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                disabled={
+                                    !this.props.reducer.languages[this.props.reducer.selected_language].fa.hasInitial()
+                                }
+                                onClick={e => {
+                                    this.props.determinize();
+                                }}
+                            >
+                                Determinize
+                            </Button>
                         </Paper>
                     </div>
                 </div>
@@ -284,7 +295,17 @@ const mapStateToProps = state => ({ reducer: state.languageReducer });
 
 const mapDispatchToProps = dispatch =>
     bindActionCreators(
-        { selectLanguage, updateGrammar, addState, addSymbol, setInitial, addFinal, removeFinal, updateTransition },
+        {
+            selectLanguage,
+            updateGrammar,
+            addState,
+            addSymbol,
+            setInitial,
+            addFinal,
+            removeFinal,
+            updateTransition,
+            determinize
+        },
         dispatch
     );
 

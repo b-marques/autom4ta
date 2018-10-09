@@ -55,7 +55,11 @@ const languageReducer = (state = 0, action) => {
             return newState;
 
         case actionType.UPDATE_TRANSITION:
-            newState.languages[newState.selected_language].fa.updateTransition(action.from, action.to, action.when);
+            newState.languages[newState.selected_language].fa.updateTransition(action.state, action.to, action.symbol);
+            return newState;
+
+        case actionType.DETERMINIZE:
+            newState.languages[newState.selected_language].fa.determinize();
             return newState;
 
         default:

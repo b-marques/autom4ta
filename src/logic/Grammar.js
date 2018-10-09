@@ -21,6 +21,8 @@ export default class Grammar {
     }
 
     extractElements() {
+        this.reset();
+
         // Remove new line whit null behind
         let lines = this.text.replace(/(?<!([a-z]|&|[0-9]|[A-Z]))\n/g, "");
 

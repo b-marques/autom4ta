@@ -10,3 +10,6 @@ export const SET_INITIAL = "SET_INITIAL";
 export const ADD_FINAL = "ADD_FINAL";
 export const REMOVE_FINAL = "REMOVE_FINAL";
 export const UPDATE_TRANSITION = "UPDATE_TRANSITION";
+
+export const DETERMINIZE = "DETERMINIZE";
+
