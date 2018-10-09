@@ -185,9 +185,10 @@ export default class FA {
                     }
 
                     if (composedDestiny.size) {
-                        let composedState = [...composedDestiny].join("");
+                        // Convert destination to a string state
+                        let composedState = [...composedDestiny].sort().join("");
                         dfa.addState(composedState);
-                        dfa.transitions[composedState][symbol].to = composedDestiny;
+                        dfa.transitions[state][symbol].to = composedState;
                         [...composedDestiny].forEach(element => {
                             if (this.finals.has(element)) {
                                 dfa.finals.add(composedState);
