@@ -157,8 +157,50 @@ export default class FA {
         return false;
     }
 
+    hasEpsilonTransition() {
+        return this.alphabet.has('&');
+    }
+
+    buildEClosure(state, eclosure = new Set()){
+        eclosure.add(state);
+        for (let destiny of this.transitions[state]['&'].to){
+            eclosure.add(destiny);
+        }
+
+        for (let each of eclosure){
+            if(!eclosure.has(each)){
+                for (let e in this.buildEClosure(each)){
+                    eclosure.add();
+                }
+            }
+        }
+        return eclosure;
+
+
+    }
+
     determinize() {
+        let eclosure = [];
+        if(true){
+            let states = [...this.states];
+            for (let state of states) {
+                eclosure[state] = [...this.buildEClosure(state)].sort().join("");    
+            }
+            console.log(eclosure);
+            return;
+        }
         let dfa = new FA();
+        if (this.hasEpsilonTransition()){
+            let states = [...this.states];
+            for (let state of states) {
+                eclosure.push({state: [...new Set(this.buildEClosure(state))].sort()});
+                
+            }
+
+        } else {
+
+        }
+        
         dfa.reset();
         [...this.alphabet].forEach(symbol => {
             dfa.addSymbol(symbol);
