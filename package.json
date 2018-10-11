@@ -3,12 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "dompurify": "^1.0.8",
+    "@material-ui/core": "^3.2.0",
+    "@material-ui/icons": "^3.0.1",
     "react": "^16.5.2",
     "react-dom": "^16.5.2",
-    "react-html-parser": "^2.0.2",
+    "react-redux": "^5.0.7",
     "react-scripts": "2.0.3",
-    "viz": "0.0.1"
+    "redux": "^4.0.0",
+    "viz.js": "^2.0.0"
   },
   "scripts": {
     "start": "react-scripts start",
