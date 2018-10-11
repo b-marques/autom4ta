@@ -529,12 +529,13 @@ class LanguageList extends React.Component {
                             </div>
                         </Paper>
                         <Paper className={classes.paper}>
-                            <div>
-                                {/*                                {this.props.reducer.languages[
+                            <div id="graph-card">
+                                                                {this.props.reducer.languages[
                                     this.props.reducer.selected_language
                                 ].fa.isFiniteAutomata()
-                                    ? this.buildDiagram()
-                                    : "Waiting for valid automata..."}*/}
+                                    ? (<Graph fsm={this.props.reducer.languages[
+                                    this.props.reducer.selected_language].fa}/>)
+                                    : "Waiting for valid automata..."}
                             </div>
                         </Paper>
                     </div>
@@ -561,7 +562,6 @@ class LanguageList extends React.Component {
                 <RemoveLanguage />
 
                 <div className="language-detail">{info}</div>
-                <Graph />
             </div>
         );
     }

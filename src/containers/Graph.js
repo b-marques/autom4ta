@@ -1,52 +1,53 @@
 import React from "react";
 import Viz from "viz.js";
+import { Module, render } from 'viz.js/full.render.js';
+
+const viz = new Viz({ Module, render });
 
 class Graph extends React.Component {
+
     renderDiagram() {
         let graph = `
-      digraph G {
+                  digraph G {
 
-    subgraph cluster_0 {
-        style=filled;
-        color=lightgrey;
-        node [style=filled,color=white];
-        a0 -> a1 -> a2 -> a3;
-        label = "process #1";
-    }
+                subgraph cluster_0 {
+                    style=filled;
+                    color=lightgrey;
+                    node [style=filled,color=white];
+                    a0 -> a1 -> a2 -> a3;
+                    label = "process #1";
+                }
 
-    subgraph cluster_1 {
-        node [style=filled];
-        b0 -> b1 -> b2 -> b3;
-        label = "process #2";
-        color=blue
-    }
-    start -> a0;
-    start -> b0;
-    a1 -> b3;
-    b2 -> a3;
-    a3 -> a0;
-    a3 -> end;
-    b3 -> end;
+                subgraph cluster_1 {
+                    node [style=filled];
+                    b0 -> b1 -> b2 -> b3;
+                    label = "process #2";
+                    color=blue
+                }
+                start -> a0;
+                start -> b0;
+                a1 -> b3;
+                b2 -> a3;
+                a3 -> a0;
+                a3 -> end;
+                b3 -> end;
 
-    start [shape=Mdiamond];
-    end [shape=Msquare];
-}`;
+                start [shape=Mdiamond];
+                end [shape=Msquare];
+            }`;
 
-        return (
-            <div
-                dangerouslySetInnerHTML={{
-                    __html: Viz(graph, { format: "svg", engine: "dot" })
-                }}
-            />
-        );
+        viz.renderSVGElement(graph)
+            .then(function(element) {
+                return element;
+                // document.getElementById("graph-card").replaceChild(element);
+         });
     }
 
     render() {
-        // Gotta return a div, otherwise React goes crazy with viz.js
+        const { fsm = null } = this.props;
+        console.log(fsm);
         return (
-            <div>
-                <div>{this.renderDiagram()}</div>
-            </div>
+                this.renderDiagram()
         );
     }
 }
