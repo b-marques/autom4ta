@@ -120,6 +120,10 @@ export default class FA {
                 }
             }
             delete this.transitions[state];
+            this.finals.delete(state);
+            if (this.initial === state) {
+                this.initial = "";
+            }
         }
     }
 
@@ -188,29 +192,89 @@ export default class FA {
         for (let each of this.transitions[state]["&"].to) {
             // This if prevent cycles
             if (!eclosure.has(each)) {
-                eclosure.add(each);
                 eclosure = this.buildEClosure(each, eclosure);
             }
         }
-
         return eclosure;
     }
 
-    removeDeadStates() {
-        let deletion_occur;
-        do {
-            deletion_occur = false;
-            for (let state of this.states) {
-                let counter = 0;
-                for (let symbol of this.alphabet) {
-                    counter += this.transitions[state][symbol].to.size;
-                }
-                if (!counter && !this.finals.has(state)) {
-                    this.deleteState(state);
-                    deletion_occur = true;
+    buildReachableStates(state, reachable_states = new Set()) {
+        reachable_states.add(state);
+        for (let symbol of this.alphabet) {
+            for (let each of this.transitions[state][symbol].to) {
+                // This if prevent cycles
+                if (!reachable_states.has(each)) {
+                    reachable_states = this.buildReachableStates(each, reachable_states);
                 }
             }
-        } while (deletion_occur);
+        }
+        return reachable_states;
+    }
+
+    isFiniteAutomata() {
+        let dfa = new FA();
+        dfa.states = new Set(this.states);
+        dfa.alphabet = new Set(this.alphabet);
+        dfa.transitions = [];
+        for (let state of this.states) {
+            dfa.transitions[state] = [];
+            for (let symbol of this.alphabet) {
+                dfa.transitions[state][symbol] = { to: new Set(), text: " -" };
+                dfa.transitions[state][symbol].to = this.transitions[state][symbol].to;
+                dfa.transitions[state][symbol].text = this.transitions[state][symbol].text;
+            }
+        }
+        dfa.initial = this.initial.slice(0);
+        dfa.finals = new Set(this.finals);
+        dfa.determinized = true;
+
+        let reachable_states = [];
+        for (let state of dfa.states) {
+            reachable_states[state] = dfa.buildReachableStates(state);
+            let reached_any_final = false;
+            for (let each of reachable_states[state]) {
+                if (dfa.finals.has(each)) {
+                    reached_any_final = true;
+                }
+            }
+            if (!reached_any_final) {
+                dfa.deleteState(state);
+            }
+        }
+        if (dfa.initial === "" || !dfa.finals.size) {
+            return false;
+        }
+        return true;
+    }
+
+    removeUselessStates() {
+        let reachable_states = [];
+        for (let state of this.states) {
+            reachable_states[state] = this.buildReachableStates(state);
+            let reached_any_final = false;
+            for (let each of reachable_states[state]) {
+                if (this.finals.has(each)) {
+                    reached_any_final = true;
+                }
+            }
+            if (!reached_any_final) {
+                this.deleteState(state);
+            }
+        }
+        // let deletion_occur;
+        // do {
+        //     deletion_occur = false;
+        //     for (let state of this.states) {
+        //         let counter = 0;
+        //         for (let symbol of this.alphabet) {
+        //             counter += this.transitions[state][symbol].to.size;
+        //         }
+        //         if (!counter && !this.finals.has(state)) {
+        //             this.deleteState(state);
+        //             deletion_occur = true;
+        //         }
+        //     }
+        // } while (deletion_occur);
 
         // Remove possible unused transitions
         for (let symbol of this.alphabet) {
@@ -333,7 +397,6 @@ export default class FA {
                 }
             }
         } while (old_length !== dfa.states.size);
-        dfa.removeDeadStates();
         dfa.renameStates();
         dfa.determinized = true;
         return dfa;
@@ -459,6 +522,8 @@ export default class FA {
         if (!dfa.determinized) {
             return;
         }
+        dfa.removeUselessStates();
+
         let selected_letter;
 
         let available_letters = new Set();

@@ -38,6 +38,8 @@ import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
 
+import Graph from "./Graph";
+
 const styles = theme => ({
     textField: {
         margin: theme.spacing.unit * 3,
@@ -61,7 +63,13 @@ const styles = theme => ({
         border: "none"
     },
     buttonsContainer: {
-        float: "left"
+        margin: "auto",
+        display: "table",
+        padding: theme.spacing.unit
+    },
+    buttons: {
+        display: "table-cell",
+        padding: theme.spacing.unit
     }
 });
 
@@ -277,238 +285,256 @@ class LanguageList extends React.Component {
                                     </TableRow>
                                 </TableBody>
                             </Table>
-                            <div id="determinize-container" className={classes.buttonsContainer}>
-                                <Button
-                                    variant="contained"
-                                    color="primary"
-                                    disabled={
-                                        !this.props.reducer.languages[
-                                            this.props.reducer.selected_language
-                                        ].fa.hasInitial()
-                                    }
-                                    onClick={e => {
-                                        this.setState({ determinizeDialogOpen: true });
-                                    }}
-                                >
-                                    Determinize
-                                </Button>
-                                <Dialog
-                                    open={this.state.determinizeDialogOpen}
-                                    onClose={e => {
-                                        this.setState({ determinizeDialogOpen: false });
-                                    }}
-                                    aria-labelledby="form-dialog-title"
-                                >
-                                    <DialogTitle id="form-dialog-title">Determinizing FA</DialogTitle>
-                                    <DialogContent>
-                                        <DialogContentText>
-                                            Please inform a name to the resultant DFA.
-                                        </DialogContentText>
-                                        <TextField
-                                            autoFocus
-                                            margin="dense"
-                                            id="name"
-                                            label="Name"
-                                            type="text"
-                                            fullWidth
-                                            onChange={e => {
-                                                this.setState({ determinizeDialogName: e.target.value });
-                                            }}
-                                        />
-                                    </DialogContent>
-                                    <DialogActions>
-                                        <Button
-                                            onClick={e => {
-                                                this.setState({ determinizeDialogOpen: false });
-                                            }}
-                                            color="primary"
-                                        >
-                                            Cancel
-                                        </Button>
-                                        <Button
-                                            onClick={e => {
-                                                this.props.determinize(this.state.determinizeDialogName);
-                                                this.setState({ determinizeDialogOpen: false });
-                                            }}
-                                            color="primary"
-                                        >
-                                            Confirm
-                                        </Button>
-                                    </DialogActions>
-                                </Dialog>
+                            <div className={classes.buttonsContainer}>
+                                <div id="determinize-container" className={classes.buttons}>
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        disabled={
+                                            !this.props.reducer.languages[
+                                                this.props.reducer.selected_language
+                                            ].fa.isFiniteAutomata()
+                                        }
+                                        onClick={e => {
+                                            this.setState({ determinizeDialogOpen: true });
+                                        }}
+                                    >
+                                        Determinize
+                                    </Button>
+                                    <Dialog
+                                        open={this.state.determinizeDialogOpen}
+                                        onClose={e => {
+                                            this.setState({ determinizeDialogOpen: false });
+                                        }}
+                                        aria-labelledby="form-dialog-title"
+                                    >
+                                        <DialogTitle id="form-dialog-title">Determinizing FA</DialogTitle>
+                                        <DialogContent>
+                                            <DialogContentText>
+                                                Please inform a name to the resultant DFA.
+                                            </DialogContentText>
+                                            <TextField
+                                                autoFocus
+                                                margin="dense"
+                                                id="name"
+                                                label="Name"
+                                                type="text"
+                                                fullWidth
+                                                onChange={e => {
+                                                    this.setState({ determinizeDialogName: e.target.value });
+                                                }}
+                                            />
+                                        </DialogContent>
+                                        <DialogActions>
+                                            <Button
+                                                onClick={e => {
+                                                    this.setState({ determinizeDialogOpen: false });
+                                                }}
+                                                color="primary"
+                                            >
+                                                Cancel
+                                            </Button>
+                                            <Button
+                                                onClick={e => {
+                                                    this.props.determinize(this.state.determinizeDialogName);
+                                                    this.setState({ determinizeDialogOpen: false });
+                                                }}
+                                                color="primary"
+                                            >
+                                                Confirm
+                                            </Button>
+                                        </DialogActions>
+                                    </Dialog>
+                                </div>
+                                <div id="union-container" className={classes.buttons}>
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        disabled={
+                                            !this.props.reducer.languages[this.props.reducer.selected_language].fa
+                                                .determinized
+                                        }
+                                        onClick={e => {
+                                            this.setState({ unionDialogOpen: true });
+                                        }}
+                                    >
+                                        Union
+                                    </Button>
+                                    <Dialog
+                                        open={this.state.unionDialogOpen}
+                                        onClose={e => {
+                                            this.setState({ unionDialogOpen: false });
+                                        }}
+                                        aria-labelledby="form-dialog-title"
+                                    >
+                                        <DialogTitle id="form-dialog-title">Union of DFA's</DialogTitle>
+                                        <DialogContent>
+                                            <DialogContentText>Please inform the ID of other DFA.</DialogContentText>
+                                            <TextField
+                                                autoFocus
+                                                margin="dense"
+                                                id="name"
+                                                label="Name"
+                                                type="text"
+                                                fullWidth
+                                                onChange={e => {
+                                                    this.setState({ unionDialogName: e.target.value });
+                                                }}
+                                            />
+                                        </DialogContent>
+                                        <DialogActions>
+                                            <Button
+                                                onClick={e => {
+                                                    this.setState({ unionDialogOpen: false });
+                                                }}
+                                                color="primary"
+                                            >
+                                                Cancel
+                                            </Button>
+                                            <Button
+                                                onClick={e => {
+                                                    this.props.union(this.state.unionDialogName);
+                                                    this.setState({ unionDialogOpen: false });
+                                                }}
+                                                color="primary"
+                                            >
+                                                Confirm
+                                            </Button>
+                                        </DialogActions>
+                                    </Dialog>
+                                </div>
+                                <div id="intersection-container" className={classes.buttons}>
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        disabled={
+                                            !this.props.reducer.languages[this.props.reducer.selected_language].fa
+                                                .determinized
+                                        }
+                                        onClick={e => {
+                                            this.setState({ intersectionDialogOpen: true });
+                                        }}
+                                    >
+                                        Intersection
+                                    </Button>
+                                    <Dialog
+                                        open={this.state.intersectionDialogOpen}
+                                        onClose={e => {
+                                            this.setState({ intersectionDialogOpen: false });
+                                        }}
+                                        aria-labelledby="form-dialog-title"
+                                    >
+                                        <DialogTitle id="form-dialog-title">Intersection of DFA's</DialogTitle>
+                                        <DialogContent>
+                                            <DialogContentText>Please inform the ID of other DFA.</DialogContentText>
+                                            <TextField
+                                                autoFocus
+                                                margin="dense"
+                                                id="name"
+                                                label="Name"
+                                                type="text"
+                                                fullWidth
+                                                onChange={e => {
+                                                    this.setState({ intersectionDialogName: e.target.value });
+                                                }}
+                                            />
+                                        </DialogContent>
+                                        <DialogActions>
+                                            <Button
+                                                onClick={e => {
+                                                    this.setState({ intersectionDialogOpen: false });
+                                                }}
+                                                color="primary"
+                                            >
+                                                Cancel
+                                            </Button>
+                                            <Button
+                                                onClick={e => {
+                                                    this.props.intersection(this.state.intersectionDialogName);
+                                                    this.setState({ intersectionDialogOpen: false });
+                                                }}
+                                                color="primary"
+                                            >
+                                                Confirm
+                                            </Button>
+                                        </DialogActions>
+                                    </Dialog>
+                                </div>
+                                <div id="minimize-container" className={classes.buttons}>
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        disabled={
+                                            !this.props.reducer.languages[this.props.reducer.selected_language].fa
+                                                .determinized
+                                        }
+                                        onClick={e => {
+                                            this.setState({ minimizeDialogOpen: true });
+                                        }}
+                                    >
+                                        Minimize
+                                    </Button>
+                                    <Dialog
+                                        open={this.state.minimizeDialogOpen}
+                                        onClose={e => {
+                                            this.setState({ minimizeDialogOpen: false });
+                                        }}
+                                        aria-labelledby="form-dialog-title"
+                                    >
+                                        <DialogTitle id="form-dialog-title">Minimization of DFA</DialogTitle>
+                                        <DialogContent>
+                                            <DialogContentText>
+                                                Please inform a name to the resultant DFA.
+                                            </DialogContentText>
+                                            <TextField
+                                                autoFocus
+                                                margin="dense"
+                                                id="name"
+                                                label="Name"
+                                                type="text"
+                                                fullWidth
+                                                onChange={e => {
+                                                    this.setState({ minimizeDialogName: e.target.value });
+                                                }}
+                                            />
+                                        </DialogContent>
+                                        <DialogActions>
+                                            <Button
+                                                onClick={e => {
+                                                    this.setState({ minimizeDialogOpen: false });
+                                                }}
+                                                color="primary"
+                                            >
+                                                Cancel
+                                            </Button>
+                                            <Button
+                                                onClick={e => {
+                                                    this.props.minimize(this.state.minimizeDialogName);
+                                                    this.setState({ minimizeDialogOpen: false });
+                                                }}
+                                                color="primary"
+                                            >
+                                                Confirm
+                                            </Button>
+                                        </DialogActions>
+                                    </Dialog>
+                                </div>
+                                <span className={classes.buttons}>
+                                    {this.props.reducer.languages[
+                                        this.props.reducer.selected_language
+                                    ].fa.isFiniteAutomata()
+                                        ? "Valid finite automata"
+                                        : "It is not a valid finite automata"}
+                                </span>
                             </div>
-                            <div id="union-container">
-                                <Button
-                                    variant="contained"
-                                    color="primary"
-                                    disabled={
-                                        !this.props.reducer.languages[this.props.reducer.selected_language].fa
-                                            .determinized
-                                    }
-                                    onClick={e => {
-                                        this.setState({ unionDialogOpen: true });
-                                    }}
-                                >
-                                    Union
-                                </Button>
-                                <Dialog
-                                    open={this.state.unionDialogOpen}
-                                    onClose={e => {
-                                        this.setState({ unionDialogOpen: false });
-                                    }}
-                                    aria-labelledby="form-dialog-title"
-                                >
-                                    <DialogTitle id="form-dialog-title">Union of DFA's</DialogTitle>
-                                    <DialogContent>
-                                        <DialogContentText>Please inform the ID of other DFA.</DialogContentText>
-                                        <TextField
-                                            autoFocus
-                                            margin="dense"
-                                            id="name"
-                                            label="Name"
-                                            type="text"
-                                            fullWidth
-                                            onChange={e => {
-                                                this.setState({ unionDialogName: e.target.value });
-                                            }}
-                                        />
-                                    </DialogContent>
-                                    <DialogActions>
-                                        <Button
-                                            onClick={e => {
-                                                this.setState({ unionDialogOpen: false });
-                                            }}
-                                            color="primary"
-                                        >
-                                            Cancel
-                                        </Button>
-                                        <Button
-                                            onClick={e => {
-                                                this.props.union(this.state.unionDialogName);
-                                                this.setState({ unionDialogOpen: false });
-                                            }}
-                                            color="primary"
-                                        >
-                                            Confirm
-                                        </Button>
-                                    </DialogActions>
-                                </Dialog>
-                            </div>
-                            <div id="intersection-container" className={classes.buttonsContainer}>
-                                <Button
-                                    variant="contained"
-                                    color="primary"
-                                    disabled={
-                                        !this.props.reducer.languages[this.props.reducer.selected_language].fa
-                                            .determinized
-                                    }
-                                    onClick={e => {
-                                        this.setState({ intersectionDialogOpen: true });
-                                    }}
-                                >
-                                    Intersection
-                                </Button>
-                                <Dialog
-                                    open={this.state.intersectionDialogOpen}
-                                    onClose={e => {
-                                        this.setState({ intersectionDialogOpen: false });
-                                    }}
-                                    aria-labelledby="form-dialog-title"
-                                >
-                                    <DialogTitle id="form-dialog-title">Intersection of DFA's</DialogTitle>
-                                    <DialogContent>
-                                        <DialogContentText>Please inform the ID of other DFA.</DialogContentText>
-                                        <TextField
-                                            autoFocus
-                                            margin="dense"
-                                            id="name"
-                                            label="Name"
-                                            type="text"
-                                            fullWidth
-                                            onChange={e => {
-                                                this.setState({ intersectionDialogName: e.target.value });
-                                            }}
-                                        />
-                                    </DialogContent>
-                                    <DialogActions>
-                                        <Button
-                                            onClick={e => {
-                                                this.setState({ intersectionDialogOpen: false });
-                                            }}
-                                            color="primary"
-                                        >
-                                            Cancel
-                                        </Button>
-                                        <Button
-                                            onClick={e => {
-                                                this.props.intersection(this.state.intersectionDialogName);
-                                                this.setState({ intersectionDialogOpen: false });
-                                            }}
-                                            color="primary"
-                                        >
-                                            Confirm
-                                        </Button>
-                                    </DialogActions>
-                                </Dialog>
-                            </div>
-                            <div id="minimize-container">
-                                <Button
-                                    variant="contained"
-                                    color="primary"
-                                    disabled={
-                                        !this.props.reducer.languages[this.props.reducer.selected_language].fa
-                                            .determinized
-                                    }
-                                    onClick={e => {
-                                        this.setState({ minimizeDialogOpen: true });
-                                    }}
-                                >
-                                    Minimize
-                                </Button>
-                                <Dialog
-                                    open={this.state.minimizeDialogOpen}
-                                    onClose={e => {
-                                        this.setState({ minimizeDialogOpen: false });
-                                    }}
-                                    aria-labelledby="form-dialog-title"
-                                >
-                                    <DialogTitle id="form-dialog-title">Minimization of DFA</DialogTitle>
-                                    <DialogContent>
-                                        <DialogContentText>
-                                            Please inform a name to the resultant DFA.
-                                        </DialogContentText>
-                                        <TextField
-                                            autoFocus
-                                            margin="dense"
-                                            id="name"
-                                            label="Name"
-                                            type="text"
-                                            fullWidth
-                                            onChange={e => {
-                                                this.setState({ minimizeDialogName: e.target.value });
-                                            }}
-                                        />
-                                    </DialogContent>
-                                    <DialogActions>
-                                        <Button
-                                            onClick={e => {
-                                                this.setState({ minimizeDialogOpen: false });
-                                            }}
-                                            color="primary"
-                                        >
-                                            Cancel
-                                        </Button>
-                                        <Button
-                                            onClick={e => {
-                                                this.props.minimize(this.state.minimizeDialogName);
-                                                this.setState({ minimizeDialogOpen: false });
-                                            }}
-                                            color="primary"
-                                        >
-                                            Confirm
-                                        </Button>
-                                    </DialogActions>
-                                </Dialog>
+                        </Paper>
+                        <Paper className={classes.paper}>
+                            <div>
+                                {/*                                {this.props.reducer.languages[
+                                    this.props.reducer.selected_language
+                                ].fa.isFiniteAutomata()
+                                    ? this.buildDiagram()
+                                    : "Waiting for valid automata..."}*/}
                             </div>
                         </Paper>
                     </div>
@@ -533,7 +559,9 @@ class LanguageList extends React.Component {
                 })}
                 <AddLanguage />
                 <RemoveLanguage />
+
                 <div className="language-detail">{info}</div>
+                <Graph />
             </div>
         );
     }
