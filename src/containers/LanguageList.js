@@ -10,8 +10,13 @@ import {
     addFinal,
     removeFinal,
     updateTransition,
-    determinize
+    determinize,
+    minimize,
+    union
 } from "../actions";
+
+import AddLanguage from "../containers/AddLanguage";
+import RemoveLanguage from "../containers/RemoveLanguage";
 
 import { withStyles } from "@material-ui/core/styles";
 import TextField from "@material-ui/core/TextField";
@@ -26,6 +31,12 @@ import TableRow from "@material-ui/core/TableRow";
 import Button from "@material-ui/core/Button";
 import Radio from "@material-ui/core/Radio";
 import Checkbox from "@material-ui/core/Checkbox";
+
+import Dialog from "@material-ui/core/Dialog";
+import DialogActions from "@material-ui/core/DialogActions";
+import DialogContent from "@material-ui/core/DialogContent";
+import DialogContentText from "@material-ui/core/DialogContentText";
+import DialogTitle from "@material-ui/core/DialogTitle";
 
 const styles = theme => ({
     textField: {
@@ -48,10 +59,24 @@ const styles = theme => ({
     },
     inputCellTransition: {
         border: "none"
+    },
+    buttonsContainer: {
+        float: "left"
     }
 });
 
 class LanguageList extends React.Component {
+    state = {
+        determinizeDialogOpen: false,
+        determinizeDialogName: "",
+        unionDialogOpen: false,
+        unionDialogName: "",
+        intersectionDialogOpen: false,
+        intersectionDialogName: "",
+        minimizeDialogOpen: false,
+        minimizeDialogName: ""
+    };
+
     tableHeader() {
         let table_header = ["⟶", "Final?", "State"];
         if (this.props.reducer.languages[this.props.reducer.selected_language].fa.alphabet)
@@ -252,18 +277,239 @@ class LanguageList extends React.Component {
                                     </TableRow>
                                 </TableBody>
                             </Table>
-                            <Button
-                                variant="contained"
-                                color="primary"
-                                disabled={
-                                    !this.props.reducer.languages[this.props.reducer.selected_language].fa.hasInitial()
-                                }
-                                onClick={e => {
-                                    this.props.determinize();
-                                }}
-                            >
-                                Determinize
-                            </Button>
+                            <div id="determinize-container" className={classes.buttonsContainer}>
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    disabled={
+                                        !this.props.reducer.languages[
+                                            this.props.reducer.selected_language
+                                        ].fa.hasInitial()
+                                    }
+                                    onClick={e => {
+                                        this.setState({ determinizeDialogOpen: true });
+                                    }}
+                                >
+                                    Determinize
+                                </Button>
+                                <Dialog
+                                    open={this.state.determinizeDialogOpen}
+                                    onClose={e => {
+                                        this.setState({ determinizeDialogOpen: false });
+                                    }}
+                                    aria-labelledby="form-dialog-title"
+                                >
+                                    <DialogTitle id="form-dialog-title">Determinizing FA</DialogTitle>
+                                    <DialogContent>
+                                        <DialogContentText>
+                                            Please inform a name to the resultant DFA.
+                                        </DialogContentText>
+                                        <TextField
+                                            autoFocus
+                                            margin="dense"
+                                            id="name"
+                                            label="Name"
+                                            type="text"
+                                            fullWidth
+                                            onChange={e => {
+                                                this.setState({ determinizeDialogName: e.target.value });
+                                            }}
+                                        />
+                                    </DialogContent>
+                                    <DialogActions>
+                                        <Button
+                                            onClick={e => {
+                                                this.setState({ determinizeDialogOpen: false });
+                                            }}
+                                            color="primary"
+                                        >
+                                            Cancel
+                                        </Button>
+                                        <Button
+                                            onClick={e => {
+                                                this.props.determinize(this.state.determinizeDialogName);
+                                                this.setState({ determinizeDialogOpen: false });
+                                            }}
+                                            color="primary"
+                                        >
+                                            Confirm
+                                        </Button>
+                                    </DialogActions>
+                                </Dialog>
+                            </div>
+                            <div id="union-container">
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    disabled={
+                                        !this.props.reducer.languages[this.props.reducer.selected_language].fa
+                                            .determinized
+                                    }
+                                    onClick={e => {
+                                        this.setState({ unionDialogOpen: true });
+                                    }}
+                                >
+                                    Union
+                                </Button>
+                                <Dialog
+                                    open={this.state.unionDialogOpen}
+                                    onClose={e => {
+                                        this.setState({ unionDialogOpen: false });
+                                    }}
+                                    aria-labelledby="form-dialog-title"
+                                >
+                                    <DialogTitle id="form-dialog-title">Union of DFA's</DialogTitle>
+                                    <DialogContent>
+                                        <DialogContentText>Please inform the ID of other DFA.</DialogContentText>
+                                        <TextField
+                                            autoFocus
+                                            margin="dense"
+                                            id="name"
+                                            label="Name"
+                                            type="text"
+                                            fullWidth
+                                            onChange={e => {
+                                                this.setState({ unionDialogName: e.target.value });
+                                            }}
+                                        />
+                                    </DialogContent>
+                                    <DialogActions>
+                                        <Button
+                                            onClick={e => {
+                                                this.setState({ unionDialogOpen: false });
+                                            }}
+                                            color="primary"
+                                        >
+                                            Cancel
+                                        </Button>
+                                        <Button
+                                            onClick={e => {
+                                                this.props.union(this.state.unionDialogName);
+                                                this.setState({ unionDialogOpen: false });
+                                            }}
+                                            color="primary"
+                                        >
+                                            Confirm
+                                        </Button>
+                                    </DialogActions>
+                                </Dialog>
+                            </div>
+                            <div id="intersection-container" className={classes.buttonsContainer}>
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    disabled={
+                                        !this.props.reducer.languages[this.props.reducer.selected_language].fa
+                                            .determinized
+                                    }
+                                    onClick={e => {
+                                        this.setState({ intersectionDialogOpen: true });
+                                    }}
+                                >
+                                    Intersection
+                                </Button>
+                                <Dialog
+                                    open={this.state.intersectionDialogOpen}
+                                    onClose={e => {
+                                        this.setState({ intersectionDialogOpen: false });
+                                    }}
+                                    aria-labelledby="form-dialog-title"
+                                >
+                                    <DialogTitle id="form-dialog-title">Intersection of DFA's</DialogTitle>
+                                    <DialogContent>
+                                        <DialogContentText>Please inform the ID of other DFA.</DialogContentText>
+                                        <TextField
+                                            autoFocus
+                                            margin="dense"
+                                            id="name"
+                                            label="Name"
+                                            type="text"
+                                            fullWidth
+                                            onChange={e => {
+                                                this.setState({ intersectionDialogName: e.target.value });
+                                            }}
+                                        />
+                                    </DialogContent>
+                                    <DialogActions>
+                                        <Button
+                                            onClick={e => {
+                                                this.setState({ intersectionDialogOpen: false });
+                                            }}
+                                            color="primary"
+                                        >
+                                            Cancel
+                                        </Button>
+                                        <Button
+                                            onClick={e => {
+                                                this.props.intersection(this.state.intersectionDialogName);
+                                                this.setState({ intersectionDialogOpen: false });
+                                            }}
+                                            color="primary"
+                                        >
+                                            Confirm
+                                        </Button>
+                                    </DialogActions>
+                                </Dialog>
+                            </div>
+                            <div id="minimize-container">
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    disabled={
+                                        !this.props.reducer.languages[this.props.reducer.selected_language].fa
+                                            .determinized
+                                    }
+                                    onClick={e => {
+                                        this.setState({ minimizeDialogOpen: true });
+                                    }}
+                                >
+                                    Minimize
+                                </Button>
+                                <Dialog
+                                    open={this.state.minimizeDialogOpen}
+                                    onClose={e => {
+                                        this.setState({ minimizeDialogOpen: false });
+                                    }}
+                                    aria-labelledby="form-dialog-title"
+                                >
+                                    <DialogTitle id="form-dialog-title">Minimization of DFA</DialogTitle>
+                                    <DialogContent>
+                                        <DialogContentText>
+                                            Please inform a name to the resultant DFA.
+                                        </DialogContentText>
+                                        <TextField
+                                            autoFocus
+                                            margin="dense"
+                                            id="name"
+                                            label="Name"
+                                            type="text"
+                                            fullWidth
+                                            onChange={e => {
+                                                this.setState({ minimizeDialogName: e.target.value });
+                                            }}
+                                        />
+                                    </DialogContent>
+                                    <DialogActions>
+                                        <Button
+                                            onClick={e => {
+                                                this.setState({ minimizeDialogOpen: false });
+                                            }}
+                                            color="primary"
+                                        >
+                                            Cancel
+                                        </Button>
+                                        <Button
+                                            onClick={e => {
+                                                this.props.minimize(this.state.minimizeDialogName);
+                                                this.setState({ minimizeDialogOpen: false });
+                                            }}
+                                            color="primary"
+                                        >
+                                            Confirm
+                                        </Button>
+                                    </DialogActions>
+                                </Dialog>
+                            </div>
                         </Paper>
                     </div>
                 </div>
@@ -281,10 +527,12 @@ class LanguageList extends React.Component {
                                 this.props.selectLanguage(id);
                             }}
                         >
-                            {language.name} {id}
+                            {language.name} {"ID: " + id}
                         </button>
                     );
                 })}
+                <AddLanguage />
+                <RemoveLanguage />
                 <div className="language-detail">{info}</div>
             </div>
         );
@@ -304,7 +552,9 @@ const mapDispatchToProps = dispatch =>
             addFinal,
             removeFinal,
             updateTransition,
-            determinize
+            determinize,
+            minimize,
+            union
         },
         dispatch
     );

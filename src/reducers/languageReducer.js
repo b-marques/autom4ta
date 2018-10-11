@@ -59,7 +59,54 @@ const languageReducer = (state = 0, action) => {
             return newState;
 
         case actionType.DETERMINIZE:
-            newState.languages[newState.selected_language].fa.determinize();
+            let det_name = action.name !== "" ? action.name : newState.selected_language.toString() + " deterministic";
+            let det_dfa = newState.languages[newState.selected_language].fa.determinize();
+            let det_grammar = new Grammar();
+            det_grammar.buildFromDFA(det_dfa);
+            newState.languages.push({
+                name: det_name,
+                grammar: det_grammar,
+                fa: det_dfa,
+                er: "......"
+            });
+            newState.selected_language = newState.languages.length - 1;
+
+            return newState;
+
+        case actionType.MINIMIZE:
+            let min_name = action.name !== "" ? action.name : newState.selected_language.toString() + " minimal";
+            let min_dfa = newState.languages[newState.selected_language].fa.minimize();
+            let min_grammar = new Grammar();
+            min_grammar.buildFromDFA(min_dfa);
+            newState.languages.push({
+                name: min_name,
+                grammar: min_grammar,
+                fa: min_dfa,
+                er: "......"
+            });
+            newState.selected_language = newState.languages.length - 1;
+
+            return newState;
+
+        case actionType.UNION:
+            if (action.id < 0 || action.id > newState.languages.length - 1) {
+                return newState;
+            }
+            if (
+                newState.languages[newState.selected_language].fa.determinized === true &&
+                newState.languages[action.id].fa.determinized === true
+            ) {
+                let union = newState.languages[newState.selected_language].fa.union(newState.languages[action.id].fa);
+
+                newState.languages.push({
+                    name: newState.selected_language + " UNION " + action.id,
+                    grammar: new Grammar(),
+                    fa: union,
+                    er: "......"
+                });
+                newState.selected_language = newState.languages.length - 1;
+                return newState;
+            }
             return newState;
 
         default:

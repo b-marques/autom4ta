@@ -83,4 +83,63 @@ export default class Grammar {
         this.S = null;
         this.valid = false;
     }
+
+    buildFromDFA(dfa) {
+        this.reset();
+        this.Vt = new Set(dfa.alphabet);
+        this.Vn = new Set(dfa.states);
+        this.valid = true;
+        this.S = dfa.initial;
+
+        // Remove accept states whitout transitions from Vn to build the grammar
+        let Vn_filtered = new Set(this.Vn);
+        for (let state of Vn_filtered) {
+            if (dfa.finals.has(state)) {
+                let counter = 0;
+                for (let symbol of this.Vt) {
+                    counter += dfa.transitions[state][symbol].to.size;
+                }
+                if (!counter) Vn_filtered.delete(state);
+            }
+        }
+
+        this.P[this.S] = new Set();
+        for (let symbol of this.Vt) {
+            let to = dfa.transitions[this.S][symbol].text.slice(1);
+            if (dfa.transitions[this.S][symbol].to.size > 0) {
+                if (dfa.finals.has(to)) {
+                    this.P[this.S].add(symbol);
+                    if (Vn_filtered.has(to)) {
+                        this.P[this.S].add(symbol + to);
+                    }
+                } else {
+                    this.P[this.S].add(symbol + to);
+                }
+            }
+        }
+
+        this.text = this.S + " -> " + [...this.P[this.S]].join(" | ") + "\n";
+
+        let Vn_whitout_S = new Set(Vn_filtered);
+        Vn_whitout_S.delete(this.S);
+        for (let Vn of Vn_whitout_S) {
+            this.P[Vn] = new Set();
+            for (let symbol of this.Vt) {
+                // remove space from beggining of text
+                let to = dfa.transitions[Vn][symbol].text.slice(1);
+                if (dfa.transitions[Vn][symbol].to.size > 0) {
+                    if (dfa.finals.has(to)) {
+                        this.P[Vn].add(symbol);
+                        if (Vn_filtered.has(to)) {
+                            this.P[Vn].add(symbol + to);
+                        }
+                    } else {
+                        this.P[Vn].add(symbol + to);
+                    }
+                }
+            }
+            this.text += Vn + " -> " + [...this.P[Vn]].join(" | ") + "\n";
+        }
+        this.text = this.text.slice(0, -1);
+    }
 }

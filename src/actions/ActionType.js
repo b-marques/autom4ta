@@ -12,4 +12,9 @@ export const REMOVE_FINAL = "REMOVE_FINAL";
 export const UPDATE_TRANSITION = "UPDATE_TRANSITION";
 
 export const DETERMINIZE = "DETERMINIZE";
+export const MINIMIZE = "MINIMIZE";
+
+export const UNION = "UNION";
+
+
 

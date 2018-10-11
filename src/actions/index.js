@@ -51,6 +51,17 @@ export const updateTransition = (state, to, symbol) => ({
     symbol: symbol
 });
 
-export const determinize = () => ({
-    type: actionType.DETERMINIZE
+export const determinize = name => ({
+    type: actionType.DETERMINIZE,
+    name: name
+});
+
+export const minimize = name => ({
+    type: actionType.MINIMIZE,
+    name: name
+});
+
+export const union = id => ({
+    type: actionType.UNION,
+    id: id
 });
