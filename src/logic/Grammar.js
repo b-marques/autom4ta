@@ -1,3 +1,8 @@
+/**
+ * @file Manages Grammar structures, conversion to NFA and build from DFA.
+ * @author Bruno Marques do Nascimento
+ */
+
 import XRegExp from "xregexp";
 
 const line_regex = XRegExp(
@@ -20,6 +25,11 @@ export default class Grammar {
         this.valid = valid;
     }
 
+    /**
+     * Extract grammar elements from a value from UI
+     *
+     * @return {grammar}
+     */
     extractElements() {
         this.reset();
 
@@ -57,6 +67,11 @@ export default class Grammar {
         return this;
     }
 
+    /**
+     * Extract terminal elements from rule
+     *
+     * @return {set}
+     */
     extractTerminals(rules) {
         let terminals = new Set();
         for (let head in rules)
@@ -65,6 +80,12 @@ export default class Grammar {
             });
         return terminals;
     }
+
+    /**
+     * Extract non terminals elements from rule
+     *
+     * @return {set}
+     */
     extractNonTerminals(rules) {
         let non_terminals = new Set();
         for (let head in rules) {
@@ -76,6 +97,9 @@ export default class Grammar {
         return non_terminals;
     }
 
+    /**
+     * Reset the Grammar structures
+     */
     reset() {
         this.Vt = new Set();
         this.Vn = new Set();
@@ -84,6 +108,11 @@ export default class Grammar {
         this.valid = false;
     }
 
+    /**
+     * Build a Grammar from a DFA
+     *
+     * @return {grammar}
+     */
     buildFromDFA(dfa) {
         this.reset();
         this.Vt = new Set(dfa.alphabet);
@@ -143,16 +172,5 @@ export default class Grammar {
             }
         }
         this.text = this.text.slice(0, -1);
-    }
-
-    toJSON() {
-        return {
-            text: this.text,
-            Vt: [...this.Vt],
-            Vn: [...this.Vn],
-            P: this.P,
-            S: this.S,
-            valid: this.valid
-        };
     }
 }

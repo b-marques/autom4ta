@@ -1,3 +1,8 @@
+/**
+ * @file Manages Finite Automata structures, including NFA and DFA.
+ * @author Bruno Marques do Nascimento
+ */
+
 const ACCEPT_STATE = "☢";
 
 export default class FA {
@@ -10,6 +15,9 @@ export default class FA {
         this.determinized = false;
     }
 
+    /**
+     * Reset Finite Automata structures
+     */
     reset() {
         this.states = new Set();
         this.alphabet = new Set();
@@ -19,6 +27,12 @@ export default class FA {
         this.determinized = false;
     }
 
+    /**
+     * Build a NFA from a given grammar
+     *
+     * @param {grammar} grammr The grammar
+     * @returns {fa}
+     */
     buildFromGrammar(grammar) {
         this.reset();
 
@@ -85,6 +99,11 @@ export default class FA {
         this.finals = finals;
     }
 
+    /**
+     * Check if the automata is deterministic
+     *
+     * @returns {bool}
+     */
     isDeterministic() {
         let alphabet = [...this.alphabet];
         let states = [...this.states];
@@ -98,6 +117,11 @@ export default class FA {
         return true;
     }
 
+    /**
+     * Add a state to the Finite Automata
+     *
+     * @param {string} state The state to be add
+     */
     addState(state) {
         if (!this.states.has(state)) {
             this.states.add(state);
@@ -109,6 +133,11 @@ export default class FA {
         }
     }
 
+    /**
+     * Delete a state of the Finite Automata
+     *
+     * @param {string} state The state to be removed
+     */
     deleteState(state) {
         if (this.states.delete(state)) {
             // Refactor transitions
@@ -128,6 +157,11 @@ export default class FA {
         }
     }
 
+    /**
+     * Add a symbol to the Finite Automata
+     *
+     * @param {string} symbol The symbol to be add
+     */
     addSymbol(symbol) {
         if (!this.alphabet.has(symbol)) {
             this.alphabet.add(symbol);
@@ -138,6 +172,11 @@ export default class FA {
         }
     }
 
+    /**
+     * Delete a symbol of the Finite Automata
+     *
+     * @param {string} symbol The symbol to be deleted
+     */
     deleteSymbol(symbol) {
         if (this.alphabet.delete(symbol)) {
             for (let state of this.states) {
@@ -146,17 +185,40 @@ export default class FA {
         }
     }
 
+    /**
+     * Set the initial state of the Finite Automata
+     *
+     * @param {string} initial The state to turn initial
+     */
     setInitial(initial) {
         this.initial = initial;
     }
 
+    /**
+     * Add final state to the Finite Automata
+     *
+     * @param {string} state The state to be add to finals states
+     */
     addFinal(state) {
         this.finals.add(state);
     }
+
+    /**
+     * Remove final state of the Finite Automata
+     *
+     * @param {string} state The state to be remove from finals states
+     */
     removeFinal(state) {
         this.finals.delete(state);
     }
 
+    /**
+     * Update the transition table
+     *
+     * @param {string} state The state selected
+     * @param {string} symbol The symbol selected
+     * @param {string} value Input value from UI
+     */
     updateTransition(state, value, symbol) {
         // Remove spaces from input
         value = value.replace(/[ \t\r]+/g, "");
@@ -179,15 +241,31 @@ export default class FA {
         this.transitions[state][symbol].text = value.size ? " " + [...value].sort().join(", ") : " -";
     }
 
+    /**
+     * Check if exists initial state
+     *
+     * @return {bool}
+     */
     hasInitial() {
         if (this.initial) return true;
         return false;
     }
 
+    /**
+     * Check if exists epsilon transisitons
+     *
+     * @return {bool}
+     */
     hasEpsilonTransition() {
         return this.alphabet.has("&");
     }
 
+    /**
+     * Build de e-closure recursively
+     *
+     * @param {string} state The first state of the eclosure.
+     * @return {set}
+     */
     buildEClosure(state, eclosure = new Set()) {
         eclosure.add(state);
         for (let each of this.transitions[state]["&"].to) {
@@ -199,6 +277,12 @@ export default class FA {
         return eclosure;
     }
 
+    /**
+     * Build reachable states
+     *
+     * @param {string} state The first state of the path.
+     * @return {set}
+     */
     buildReachableStates(state, reachable_states = new Set()) {
         reachable_states.add(state);
         for (let symbol of this.alphabet) {
@@ -212,6 +296,11 @@ export default class FA {
         return reachable_states;
     }
 
+    /**
+     * Check if is Finite Automata
+     *
+     * @return {bool}
+     */
     isFiniteAutomata() {
         let dfa = new FA();
         dfa.states = new Set(this.states);
@@ -248,6 +337,9 @@ export default class FA {
         return true;
     }
 
+    /**
+     * Remove usesless states from Finite Automata
+     */
     removeUselessStates() {
         let reachable_states = [];
         for (let state of this.states) {
@@ -275,6 +367,10 @@ export default class FA {
         }
     }
 
+    /**
+     * Rename the states of finite Automata to A - Z
+     * @param {set} available_letters A set with availabe letters.
+     */
     renameStates(available_letters) {
         if (available_letters === undefined) {
             available_letters = new Set();
@@ -328,6 +424,11 @@ export default class FA {
         } while (has_changed);
     }
 
+    /**
+     * Determinize the Finite Automata
+     *
+     * @return {fa}
+     */
     determinize() {
         let dfa = new FA();
 
@@ -389,6 +490,11 @@ export default class FA {
         return dfa;
     }
 
+    /**
+     * Union two DFA'S
+     *
+     * @return {fa}
+     */
     union(dfaOriginal) {
         let dfa = new FA();
         dfa.states = new Set(dfaOriginal.states);
@@ -477,7 +583,11 @@ export default class FA {
         }
         return dfa;
     }
-
+    /**
+     * Check if Finite Automata has undefined transitions
+     *
+     * @return {bool}
+     */
     hasUndefinedTransition() {
         for (let state of this.states) {
             for (let symbol of this.alphabet) {
@@ -489,6 +599,11 @@ export default class FA {
         return false;
     }
 
+    /**
+     * Minimize a DFA
+     *
+     * @return {fa}
+     */
     minimize() {
         let dfa = new FA();
         dfa.states = new Set(this.states);
@@ -689,6 +804,11 @@ export default class FA {
         return dfa;
     }
 
+    /**
+     * Intersect two DFA'S
+     *
+     * @return {fa}
+     */
     intersection(dfaOriginal) {
         let dfa = new FA();
         dfa.states = new Set(dfaOriginal.states);

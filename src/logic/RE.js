@@ -1,3 +1,8 @@
+/**
+ * @file Manages Regular Expression operations and Syntax Tree build.
+ * @author Bruno Marques do Nascimento
+ */
+
 import RegexTree from "regexp-tree";
 import FA from "./FA";
 
@@ -19,6 +24,11 @@ export default class RE {
         this.valid = valid;
     }
 
+    /**
+     * Build DFA from a syntax tree accordingly to the Regular Expression in UI.
+     *
+     * @return {fa}
+     */
     buildDFA() {
         if (this.text === "") {
             this.valid = true;
@@ -98,6 +108,9 @@ class Node {
         this.lastpos = lastpos;
     }
 
+    /**
+     * Function called by root node to build syntax tree.
+     */
     buildTree(tree) {
         alphabet = new Set();
         id_map = [];
@@ -135,6 +148,11 @@ class Node {
         alphabet.delete("#");
     }
 
+    /**
+     * Recursive function responsible to build the syntax tree.
+     *
+     * @param {object} tree The tree node to be processed
+     */
     buildNodes(tree) {
         if (tree === null) {
             this.type = LEAF_EPSILON;
