@@ -58,6 +58,14 @@ const styles = theme => ({
         flexGrow: 1,
         backgroundColor: theme.palette.background.default,
         padding: theme.spacing.unit * 3
+    },
+    listItem: {
+        "&:focus": {
+            backgroundColor: "#eb7f00",
+            "& $primary, & $icon": {
+                color: theme.palette.common.white
+            }
+        }
     }
 });
 
@@ -80,10 +88,11 @@ class ResponsiveDrawer extends React.Component {
                 </Toolbar>
                 <Divider />
                 <div className="language-list-cotainer">
-                    <List component="nav">
+                    <List component="nav" className={classes.listItem}>
                         {this.props.reducer.languages.map((language, id) => {
                             return (
                                 <ListItem
+                                    className={classes.listItem}
                                     button
                                     selected={id === this.props.reducer.selected_language}
                                     key={id}
@@ -92,7 +101,9 @@ class ResponsiveDrawer extends React.Component {
                                         this.props.selectLanguage(id);
                                     }}
                                 >
-                                    <Typography noWrap>{" ID: " + id + "  -  " + language.name}</Typography>
+                                    <Typography noWrap color="inherit">
+                                        {" ID: " + id + "  -  " + language.name}
+                                    </Typography>
                                 </ListItem>
                             );
                         })}

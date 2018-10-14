@@ -262,20 +262,6 @@ export default class FA {
                 this.deleteState(state);
             }
         }
-        // let deletion_occur;
-        // do {
-        //     deletion_occur = false;
-        //     for (let state of this.states) {
-        //         let counter = 0;
-        //         for (let symbol of this.alphabet) {
-        //             counter += this.transitions[state][symbol].to.size;
-        //         }
-        //         if (!counter && !this.finals.has(state)) {
-        //             this.deleteState(state);
-        //             deletion_occur = true;
-        //         }
-        //     }
-        // } while (deletion_occur);
 
         // Remove possible unused transitions
         for (let symbol of this.alphabet) {
