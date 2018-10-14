@@ -10,6 +10,7 @@
     "react-redux": "^5.0.7",
     "react-scripts": "2.0.3",
     "redux": "^4.0.0",
+    "regexp-tree": "0.0.85",
     "viz.js": "^2.0.0"
   },
   "scripts": {
@@ -26,5 +27,18 @@
     "not dead",
     "not ie <= 11",
     "not op_mini all"
-  ]
+  ],
+  "description": "This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).",
+  "main": "index.js",
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/b-marques/autom4ta.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/b-marques/autom4ta/issues"
+  },
+  "homepage": "https://github.com/b-marques/autom4ta#readme"
 }
