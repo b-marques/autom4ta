@@ -1,6 +1,15 @@
 import React from "react";
 import PropTypes from "prop-types";
+import { connect } from "react-redux";
+import { bindActionCreators } from "redux";
+
+import logo from "../logo.svg";
 import { withStyles } from "@material-ui/core/styles";
+
+import AddLanguage from "../containers/AddLanguage";
+import RemoveLanguage from "../containers/RemoveLanguage";
+import { selectLanguage } from "../actions";
+
 import Drawer from "@material-ui/core/Drawer";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
@@ -9,8 +18,9 @@ import IconButton from "@material-ui/core/IconButton";
 import Hidden from "@material-ui/core/Hidden";
 import Divider from "@material-ui/core/Divider";
 import MenuIcon from "@material-ui/icons/Menu";
-import logo from "../logo.svg";
-import Content from "./Content";
+import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
+import LanguageList from "../containers/LanguageList";
 
 const drawerWidth = 240;
 
@@ -69,6 +79,28 @@ class ResponsiveDrawer extends React.Component {
                     <img src={logo} alt="logo" width="100%" />
                 </Toolbar>
                 <Divider />
+                <div className="language-list-cotainer">
+                    <List component="nav">
+                        {this.props.reducer.languages.map((language, id) => {
+                            return (
+                                <ListItem
+                                    button
+                                    selected={id === this.props.reducer.selected_language}
+                                    key={id}
+                                    onClick={e => {
+                                        e.preventDefault();
+                                        this.props.selectLanguage(id);
+                                    }}
+                                >
+                                    <Typography noWrap>{" ID: " + id + "  -  " + language.name}</Typography>
+                                </ListItem>
+                            );
+                        })}
+                    </List>
+                </div>
+
+                <AddLanguage />
+                <RemoveLanguage />
                 <Toolbar />
             </div>
         );
@@ -119,7 +151,7 @@ class ResponsiveDrawer extends React.Component {
                 </Hidden>
                 <main className={classes.content}>
                     <div className={classes.toolbar} />
-                    <Content />
+                    <LanguageList />
                 </main>
             </div>
         );
@@ -131,4 +163,16 @@ ResponsiveDrawer.propTypes = {
     theme: PropTypes.object.isRequired
 };
 
-export default withStyles(styles, { withTheme: true })(ResponsiveDrawer);
+const mapStateToProps = state => ({ reducer: state.languageReducer });
+
+const mapDispatchToProps = dispatch =>
+    bindActionCreators(
+        {
+            selectLanguage
+        },
+        dispatch
+    );
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(withStyles(styles, { withTheme: true })(ResponsiveDrawer));

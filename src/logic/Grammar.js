@@ -6,7 +6,7 @@ const line_regex = XRegExp(
         "(",
         "((&\\s*)|(([a-z]|[0-9])([A-Z])\\s*)|(([a-z]|[0-9])\\s*))",
         "((\\|\\s*&\\s*)|(\\|\\s*(([a-z]|[0-9])([A-Z])\\s*)|(\\|\\s*([a-z]|[0-9])\\s*)))*",
-        "))$"
+        "\\s*))$"
     ].join("")
 );
 
@@ -138,8 +138,21 @@ export default class Grammar {
                     }
                 }
             }
-            this.text += Vn + " -> " + [...this.P[Vn]].join(" | ") + "\n";
+            if (this.P[Vn].size) {
+                this.text += Vn + " -> " + [...this.P[Vn]].join(" | ") + "\n";
+            }
         }
         this.text = this.text.slice(0, -1);
+    }
+
+    toJSON() {
+        return {
+            text: this.text,
+            Vt: [...this.Vt],
+            Vn: [...this.Vn],
+            P: this.P,
+            S: this.S,
+            valid: this.valid
+        };
     }
 }

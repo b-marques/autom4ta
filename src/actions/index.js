@@ -65,3 +65,23 @@ export const union = id => ({
     type: actionType.UNION,
     id: id
 });
+
+export const intersection = id => ({
+    type: actionType.INTERSECTION,
+    id: id
+});
+
+export const updateRE = text => ({
+    type: actionType.UPDATE_RE,
+    text: text
+});
+
+export const removeState = state => ({
+    type: actionType.REMOVE_STATE,
+    state: state
+});
+
+export const removeSymbol = symbol => ({
+    type: actionType.REMOVE_SYMBOL,
+    symbol: symbol
+});

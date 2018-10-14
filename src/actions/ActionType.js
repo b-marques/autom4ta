@@ -15,6 +15,10 @@ export const DETERMINIZE = "DETERMINIZE";
 export const MINIMIZE = "MINIMIZE";
 
 export const UNION = "UNION";
+export const INTERSECTION = "INTERSECTION";
 
+export const UPDATE_RE = "UPDATE_RE";
 
+export const REMOVE_STATE = "REMOVE_STATE";
+export const REMOVE_SYMBOL = "REMOVE_SYMBOL";
 

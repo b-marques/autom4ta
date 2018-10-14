@@ -1,12 +1,11 @@
 import React from "react";
-import LanguageList from "../containers/LanguageList";
+import LanguageList from "../components/ResponsiveDrawer";
+// import LanguageList from "../containers/LanguageList";
 
 const App = () => {
     return (
         <div className="container">
-            <div>
-                <LanguageList />
-            </div>
+            <LanguageList />
         </div>
     );
 };

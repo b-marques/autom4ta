@@ -1,7 +1,7 @@
 const ACCEPT_STATE = "☢";
 
 export default class FA {
-    constructor(states, alphabet, transitions, initial, finals) {
+    constructor(states = new Set(), alphabet = new Set(), transitions = [], initial = "", finals = new Set()) {
         this.states = states;
         this.alphabet = alphabet;
         this.transitions = transitions;
@@ -77,6 +77,7 @@ export default class FA {
                 }
             });
         }
+
         this.states = states;
         this.alphabet = alphabet;
         this.transitions = transitions;
@@ -220,7 +221,7 @@ export default class FA {
             dfa.transitions[state] = [];
             for (let symbol of this.alphabet) {
                 dfa.transitions[state][symbol] = { to: new Set(), text: " -" };
-                dfa.transitions[state][symbol].to = this.transitions[state][symbol].to;
+                dfa.transitions[state][symbol].to = new Set(this.transitions[state][symbol].to);
                 dfa.transitions[state][symbol].text = this.transitions[state][symbol].text;
             }
         }
@@ -411,7 +412,7 @@ export default class FA {
             dfa.transitions[state] = [];
             for (let symbol of dfaOriginal.alphabet) {
                 dfa.transitions[state][symbol] = { to: new Set(), text: " -" };
-                dfa.transitions[state][symbol].to = dfaOriginal.transitions[state][symbol].to;
+                dfa.transitions[state][symbol].to = new Set(dfaOriginal.transitions[state][symbol].to);
                 dfa.transitions[state][symbol].text = dfaOriginal.transitions[state][symbol].text;
             }
         }
@@ -453,7 +454,7 @@ export default class FA {
             dfa.addState(state);
             for (let symbol of this.alphabet) {
                 dfa.transitions[state][symbol] = { to: new Set(), text: " -" };
-                dfa.transitions[state][symbol].to = this.transitions[state][symbol].to;
+                dfa.transitions[state][symbol].to = new Set(this.transitions[state][symbol].to);
                 dfa.transitions[state][symbol].text = this.transitions[state][symbol].text;
             }
         }
@@ -511,7 +512,7 @@ export default class FA {
             dfa.transitions[state] = [];
             for (let symbol of this.alphabet) {
                 dfa.transitions[state][symbol] = { to: new Set(), text: " -" };
-                dfa.transitions[state][symbol].to = this.transitions[state][symbol].to;
+                dfa.transitions[state][symbol].to = new Set(this.transitions[state][symbol].to);
                 dfa.transitions[state][symbol].text = this.transitions[state][symbol].text;
             }
         }
@@ -522,6 +523,7 @@ export default class FA {
         if (!dfa.determinized) {
             return;
         }
+
         dfa.removeUselessStates();
 
         let selected_letter;
@@ -613,8 +615,7 @@ export default class FA {
             }
         }
 
-        console.log(relation_table);
-
+        // Delete aditional state to build full transition
         if (selected_letter !== undefined) {
             dfa.deleteState(selected_letter);
             available_letters.add(selected_letter);
@@ -644,8 +645,6 @@ export default class FA {
             }
         }
 
-        console.log(equals_states);
-
         // Set transitions to new states
         for (let state of dfa.states) {
             for (let symbol of dfa.alphabet) {
@@ -664,8 +663,11 @@ export default class FA {
             dfa.addState(new_state);
             for (let symbol of dfa.alphabet) {
                 let set_to = new Set();
+
                 for (let state of equals_states[new_state]) {
-                    set_to.add([...dfa.transitions[state][symbol].to][0]);
+                    if (dfa.transitions[state][symbol].to.size) {
+                        set_to.add([...dfa.transitions[state][symbol].to][0]);
+                    }
                 }
                 let match_any_new = false;
                 let selected_state = "";
@@ -677,6 +679,7 @@ export default class FA {
                         }
                     }
                 }
+
                 if (match_any_new) {
                     dfa.transitions[new_state][symbol].to = new Set(selected_state);
                     dfa.transitions[new_state][symbol].text = " " + selected_state;
@@ -696,6 +699,61 @@ export default class FA {
                 dfa.deleteState(state);
             }
         }
+
         return dfa;
+    }
+
+    intersection(dfaOriginal) {
+        let dfa = new FA();
+        dfa.states = new Set(dfaOriginal.states);
+        dfa.alphabet = new Set(dfaOriginal.alphabet);
+        dfa.transitions = [];
+        for (let state of dfaOriginal.states) {
+            dfa.transitions[state] = [];
+            for (let symbol of dfaOriginal.alphabet) {
+                dfa.transitions[state][symbol] = { to: new Set(), text: " -" };
+                dfa.transitions[state][symbol].to = new Set(dfaOriginal.transitions[state][symbol].to);
+                dfa.transitions[state][symbol].text = dfaOriginal.transitions[state][symbol].text;
+            }
+        }
+        dfa.initial = dfaOriginal.initial.slice(0);
+        dfa.finals = new Set(dfaOriginal.finals);
+        dfa.determinized = false;
+
+        let result = new FA();
+
+        for (let symbol of this.alphabet) {
+            if (dfa.alphabet.has(symbol)) {
+                result.addSymbol(symbol);
+            }
+        }
+
+        for (let state_x of this.states) {
+            for (let state_y of dfa.states) {
+                let new_state = [...new Set([state_x, state_y])].join("");
+                result.addState(new_state);
+                for (let symbol of result.alphabet) {
+                    if (this.transitions[state_x][symbol].to.size && dfa.transitions[state_y][symbol].to.size) {
+                        let new_to = new Set(this.transitions[state_x][symbol].to);
+                        new_to.add([...dfa.transitions[state_y][symbol].to][0]);
+                        result.transitions[new_state][symbol].to = new_to;
+                        result.transitions[new_state][symbol].text = " " + [...new_to].join("");
+                    }
+                }
+            }
+        }
+
+        for (let final_x of this.finals) {
+            for (let final_y of dfa.finals) {
+                let new_finals = new Set([final_x, final_y]);
+                result.finals.add([...new_finals].join(""));
+            }
+        }
+
+        result.initial = [...new Set([this.initial, dfa.intial])].join("");
+
+        result.renameStates();
+
+        return result;
     }
 }
